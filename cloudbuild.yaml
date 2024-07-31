@@ -1,0 +1,19 @@
+steps:
+  # Use maven to package the app
+  - name: maven:3.9.6-eclipse-temurin-17
+    entrypoint: mvn
+    args: ['-DskipTests', 'package']
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    script: |
+      docker build -t us-east1-docker.pkg.dev/lingo-5bc1a/hhc/hhc-backend .
+  # Push the container image to the Artifact Repository
+  - name: 'gcr.io/cloud-builders/docker'
+    script: |
+      docker push us-east1-docker.pkg.dev/lingo-5bc1a/hhc/hhc-backend
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    script: |
+      gcloud run deploy hhc-backend --image us-east1-docker.pkg.dev/lingo-5bc1a/hhc/hhc-backend --region us-east1 --platform managed --allow-unauthenticated
+images:
+  - 'us-east1-docker.pkg.dev/lingo-5bc1a/hhc/hhc-backend'
